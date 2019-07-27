@@ -1,177 +1,85 @@
-// Gulp and node
 const gulp = require('gulp');
-const cp = require('child_process');
-
-// Basic workflow plugins
-const browserSync = require('browser-sync');
-const sass = require('gulp-sass');
-const jekyll = process.platform === 'win32' ? 'jekyll.bat' : 'jekyll';
-const messages = {
-    jekyllBuild: '<span style="color: grey">Running:</span> $ jekyll build'
-};
-
-// Performance workflow plugins
-const htmlmin = require('gulp-htmlmin');
-const prefix = require('gulp-autoprefixer');
-const sourcemaps = require('gulp-sourcemaps');
-const concat = require('gulp-concat');
-const uglify = require('gulp-uglify');
-const critical = require('critical');
-
-// Image Generation TODO
-const responsive = require('gulp-responsive');
-const $ = require('gulp-load-plugins')();
+const autoprefixer = require('gulp-autoprefixer');
+const browserify = require('browserify');
+const buffer = require('vinyl-buffer');
+const cleanCSS = require('gulp-clean-css');
+const eslint = require('gulp-eslint');
 const rename = require('gulp-rename');
-const imagemin = require('gulp-imagemin');
+const sass = require('gulp-sass');
+const source = require('vinyl-source-stream');
+const stylelint = require('gulp-stylelint');
+const uglify = require('gulp-uglify');
+const zip = require('gulp-zip');
 
-const src = {
-  css: '_sass/main.scss',
-  js: '_js/**/*.js',
-}
-const dist = {
-  css: '_site/assets/css',
-  js: '_site/assets/js',
-}
-
-// Build the Jekyll Site
-gulp.task('jekyll-build', function (done) {
-    browserSync.notify(messages.jekyllBuild);
-    return cp.spawn( jekyll , ['build'], {stdio: 'inherit'})
-        .on('close', done);
-});
-
-gulp.task('deploy', ['jekyll-build'], function () {
-    return gulp.src('./_site/**/*')
-        .pipe(deploy());
-});
-
-// Rebuild Jekyll & do page reload
-gulp.task('rebuild', ['jekyll-build'], function () {
-    browserSync.reload();
-});
-
-// Rebuild Jekyll & do page reload
-gulp.task('browser-sync', ['sass', 'js', 'jekyll-build'], function() {
-    browserSync({
-        server: {
-            baseDir: '_site'
-        }
-    });
-});
-
-// Complie SCSS to CSS & Prefix
-gulp.task('sass', function() {
-  return gulp.src(src.css)
-    .pipe(sourcemaps.init())
-    .pipe(sass({
-      outputStyle: 'compressed',
-      includePaths: ['scss'],
-      // functions: sassFunctions(),
-      onError: browserSync.notify
-    }))
-    .pipe(prefix())
-    .pipe(sourcemaps.write('./maps'))
-    .pipe(gulp.dest(dist.css))
-    .pipe(browserSync.reload({ stream: true }))
-    .pipe(gulp.dest('assets/css'));
-});
-
-// Uglify JS
-gulp.task('js', function() {
+function lintStyles() {
   return gulp.src([
-      'node_modules/jquery/dist/jquery.js',
-      'node_modules/lazysizes/plugins/unveilhooks/ls.unveilhooks.js',
-      'node_modules/lazysizes/lazysizes.js',
-      'node_modules/velocity-animate/velocity.js',
-      src.js
-    ])
-    .pipe(concat('bundle.js'))
+    './_assets/scss/**/*.scss',
+    '!./_assets/scss/vendor/_normalize.scss',
+    '!./_assets/scss/fonts/*.scss'
+  ])
+    .pipe(stylelint({
+      reporters: [
+        {formatter: 'string', console: true}
+      ]
+    }));
+}
+
+function styles() {
+  return gulp.src('./_assets/scss/app.scss')
+    .pipe(sass().on('error', sass.logError))
+    .pipe(autoprefixer({cascade: false}))
+    .pipe(cleanCSS())
+    .pipe(rename({suffix: '.min'}))
+    .pipe(gulp.dest('./assets/css'));
+}
+
+function lint() {
+  return gulp.src([
+    './_assets/js/components/_formcarry.js',
+    './_assets/js/components/_infiniteScroll.js',
+    './_assets/js/components/_mailChimp.js',
+    './_assets/js/components/_miscellaneous.js',
+    './_assets/js/components/_pageTransition.js',
+    './_assets/js/components/_popup.js',
+    './_assets/js/_inits.js'
+  ])
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
+}
+
+function scripts() {
+  return browserify('./_assets/js/app.js')
+    .transform('babelify', {presets: ['@babel/preset-env']})
+    .bundle()
+    .pipe(source('app.js'))
+    .pipe(buffer())
     .pipe(uglify())
-    .pipe(gulp.dest(dist.js))
-    .pipe(browserSync.reload({stream: true}))
-    .pipe(gulp.dest('assets/js'))
-    .on('error', function(err){
-      console.error('Error in uglify taks', err.toString());
-    });
-});
+    .pipe(rename({suffix: '.min'}))
+    .pipe(gulp.dest('./assets/js'));
+}
 
-gulp.task('critical', function (cb) {
-  critical.generate({
-    base: '_site/',
-    src: 'index.html',
-    css: ['assets/css/main.css'],
-    dimensions: [{
-      width: 320,
-      height: 480
-    },{
-      width: 768,
-      height: 1024
-    },{
-      width: 1280,
-      height: 960
-    }],
-    dest: '../_includes/critical.css',
-    minify: true,
-    extract: false,
-    ignore: ['@font-face']
-  });
-});
+function dist() {
+  return gulp.src([
+    './**',
+    '!./.DS_Store',
+    '!./.git',
+    '!./node_modules/**'
+  ])
+    .pipe(zip('barber-jekyll.zip'))
+    .pipe(gulp.dest('../'))
+}
 
-gulp.task('watch', function() {
-  gulp.watch('_sass/**/*.scss', ['sass']);
-  gulp.watch(['*.html', '_layouts/*.html', '_includes/*.html', '_posts/*.md',  'pages_/*.md', '_include/*html'], ['rebuild']);
-  gulp.watch('_js/**/*.js', ['js']);
-});
+function watch() {
+  gulp.watch('./_assets/scss/**/*.scss', styles);
+  gulp.watch('./_assets/js/**/*.js', scripts);
+}
 
-gulp.task('default', ['browser-sync', 'watch']);
+const build = gulp.series(styles, scripts, watch);
+gulp.task('default', build);
 
-// Minify HTML
-gulp.task('html', function() {
-    gulp.src('./_site/index.html')
-        .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(gulp.dest('./_site'))
-    gulp.src('./_site/*/*html')
-        .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(gulp.dest('./_site/./'))
-});
-
-// Images
-gulp.task('img', function() {
-  return gulp.src('_img/posts/*.{png,jpg}')
-    .pipe($.responsive({
-      // For all the images in the folder
-      '*': [{
-        width: 230,
-        rename: {suffix: '_placehold'},
-      }, {
-        // thubmnail
-        width: 535,
-        rename: { suffix: '_thumb' },
-      }, {
-        // thumbnail @2x
-        width: 535 * 2,
-        rename: { suffix: '_thumb@2x' },
-      }, {
-        width: 575,
-        rename: { suffix: '_xs'}
-      }, {
-        width: 767,
-        rename: {suffix: '_sm'}
-      }, {
-        width: 991,
-        rename: { suffix: '_md' }
-      }, {
-        width: 1999,
-        rename: { suffix: '_lg' }
-      }, {
-        // max-width hero
-        width: 1920,
-      }],
-    }, {
-      quality: 70,
-      progressive: true,
-      withMetadata: false,
-    }))
-    .pipe(imagemin())
-    .pipe(gulp.dest('assets/img/posts/'));
-});
+exports.lintStyles = lintStyles;
+exports.styles = styles;
+exports.lint = lint;
+exports.scripts = scripts;
+exports.dist = dist;

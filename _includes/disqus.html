@@ -1,18 +1,24 @@
-{% if page.comments != false %}
-<div id="disqus_thread"></div>
-<script>
+<!--
 
-var disqus_config = function () {
-this.page.url = '{{ page.url | absolute_url }}';
-this.page.identifier = '{{ page.url | absolute_url }}';
-};
+If you use Disqus comments, just uncomment this block.
+The only thing you need to change is "test-apkdzgmqhj" - which
+should be replaced with your own Disqus site-id.
 
-(function() {
-var d = document, s = d.createElement('script');
-s.src = 'https://{{ site.disqus.shortname }}.disqus.com/embed.js';
-s.setAttribute('data-timestamp', +new Date());
-(d.head || d.body).appendChild(s);
-})();
-</script>
-<noscript>Please enable JavaScript to view the comments.</noscript>
-{% endif %}
+<div class="post__comments section-padding">
+  <div class="grid-small">
+    <div id="disqus_thread"></div>
+    <script>
+      var disqus_config = function () {
+        this.page.url = '{{ page.url | absolute_url }}';
+        this.page.identifier = '{{ page.url | absolute_url }}';
+      };
+      (function() {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://{{ site.disqus }}.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', + new Date());
+        (d.head || d.body).appendChild(s);
+      })();
+    </script>
+  </div>
+</div>
+-->

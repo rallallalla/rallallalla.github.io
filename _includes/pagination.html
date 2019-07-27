@@ -1,3 +1,5 @@
-<nav class="pagination">
-  <a href="#" class="pagination__item">1</a>
-</nav>
+{% if paginator.next_page %}
+  <div class="posts__pagination">
+    <span class="posts__next">Load More</span>
+  </div>
+{% endif %}

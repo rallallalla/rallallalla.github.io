@@ -1,50 +1,85 @@
-title: Sleek # your site title
-author: GitHub User
-email: your-email@domain.com # email for form submission, you also have to change it in _js/scripts.js
-description: > # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
-baseurl: "/" # the subpath of your site, e.g. /blog
-url: "https://janczizikow.github.io/sleek" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jan_czizikow # replace with your_twitter_username or comment to remove link from footer
-github_username:  janczizikow # replace with your_github_username or comment to remove link from footer
-instagram_username: shanlongjj # replace with your_instagram_username or comment to remove link from footer
-social:
-  name: Your Name
-  links:
-    - https://twitter.com/BenBalter
-    - https://www.facebook.com/ben.balter
-    - https://www.linkedin.com/in/BenBalter
-    - https://plus.google.com/+BenBalter
-    - https://github.com/benbalter
-    - https://keybase.io/benbalter
+# Site/SEO settings
+email: okay@samesies.io
+baseurl: ""
+permalink: /:year/:month/:day/:title/
+google_analytics: 
 
-disqus:
-  shortname: janczizikow # to enable comments replace with your_disqus_shortname
+name: Thomas Vaeth
+title: The Barber Theme
+description: >
+  Barber is a blog theme for Jekyll built by Thomas Vaeth for Samesies using HTML, Sass, and JavaScript.
+url: http://barber.samesies.io
+twitter_username: thomasvaeth
+default_img: /assets/images/seo.jpg
+social:
+  - name: twitter
+    url: https://twitter.com/thomasvaeth
+  - name: instagram
+    url: https://www.instagram.com/thomas.vaeth/
+  - name: linkedin
+    url: https://www.linkedin.com/in/thomasvaeth/
+  - name: github
+    url: https://github.com/samesies
+  - name: codepen
+    url: https://codepen.io/thomasvaeth/
+
+# Contact settings
+contact_img: /assets/images/placeholder-28.jpg
+formcarry: https://formcarry.com/s/HkIo0nMb7
+
+# Disqus settings
+disqus: test-apkdzgmqhj
+
+# MailChimp settings
+mailchimp_action: https://samesies.us17.list-manage.com/subscribe/post-json?u=66ddf555dab480e6a8606430b&amp;id=89b3ee034f
+mailchimp_input: b_66ddf555dab480e6a8606430b_89b3ee034f
+
+# Author settings
+author:
+  - name: Thomas Vaeth
+    bio: Thomas Vaeth was born in New York, raised in Pennsylvania, and transplanted in Washington. He was a Web Developer at Urban Influence, but now he's a Software Engineer at Getty Images.
+    url: http://thomasvaeth.com
+
+# Pagination settings
+pagination:
+  enabled: true
+  debug: false
+  per_page: 12
+  permalink: '/page/:num/'
+  title: ':title'
+  limit: 0
+  sort_field: 'date'
+  sort_reverse: true
+autopages:
+  enabled: true
+  categories:
+    enabled: false
+  collections:
+    enabled: false
+  tags:
+    layouts: 
+      - 'tag.html'
+    title: 'The Barber Theme'
+    permalink: '/tag/:tag'
+    slugify:
+      mode: raw
+      cased: true
 
 # Build settings
 markdown: kramdown
-highlighter: rouge # or pygments or null
-theme: jekyll-sleek
-exclude:
-  - README.md
-  - node_modules
-  - package.json
-  - package-lock.json
-  - Gemfile
-  - Gemfile.lock
-  - vendor
-  - npm-debug.log
-  - gulpfile.js
-  - sleek.png
-
-include: ['_pages']
-permalink: /:title/
-
+plugins:
+  - jekyll-paginate-v2
+  - jekyll-sitemap
 compress_html:
   clippings: all
-
-plugins:
-  - jekyll-sitemap
-  - jekyll-seo-tag
+  comments: all
+  startings: [html, head, body]
+exclude:
+  - node_modules
+  - .DS_Store
+  - barber.jpg
+  - Gemfile
+  - Gemfile.lock
+  - gulpfile.js
+  - package.json
+  - README.md
